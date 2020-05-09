@@ -19,22 +19,47 @@ from rest_framework_csv.renderers import CSVRenderer
 
 from doccano.filters import DocumentFilter
 from doccano.models import Project, Label, Document, RoleMapping, Role
-from doccano.permissions import IsProjectAdmin, IsAnnotatorAndReadOnly, IsAnnotator, IsAnnotationApproverAndReadOnly, IsOwnAnnotation, IsAnnotationApprover
-from doccano.serializers import ProjectSerializer, LabelSerializer, DocumentSerializer, UserSerializer
-from doccano.serializers import ProjectPolymorphicSerializer, RoleMappingSerializer, RoleSerializer
-from doccano.utils import CSVParser, ExcelParser, JSONParser, PlainTextParser, CoNLLParser, iterable_to_io
+from doccano.permissions import (
+    IsProjectAdmin,
+    IsAnnotatorAndReadOnly,
+    IsAnnotator,
+    IsAnnotationApproverAndReadOnly,
+    IsOwnAnnotation,
+    IsAnnotationApprover,
+)
+from doccano.serializers import (
+    ProjectSerializer,
+    LabelSerializer,
+    DocumentSerializer,
+    UserSerializer,
+)
+from doccano.serializers import (
+    ProjectPolymorphicSerializer,
+    RoleMappingSerializer,
+    RoleSerializer,
+)
+from doccano.utils import (
+    CSVParser,
+    ExcelParser,
+    JSONParser,
+    PlainTextParser,
+    CoNLLParser,
+    iterable_to_io,
+)
 from doccano.utils import JSONLRenderer
 from doccano.utils import JSONPainter, CSVPainter
 
-IsInProjectReadOnlyOrAdmin = (IsAnnotatorAndReadOnly | IsAnnotationApproverAndReadOnly | IsProjectAdmin)
-IsInProjectOrAdmin = (IsAnnotator | IsAnnotationApprover | IsProjectAdmin)
+IsInProjectReadOnlyOrAdmin = (
+    IsAnnotatorAndReadOnly | IsAnnotationApproverAndReadOnly | IsProjectAdmin
+)
+IsInProjectOrAdmin = IsAnnotator | IsAnnotationApprover | IsProjectAdmin
 
 
 class Me(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
-        serializer = UserSerializer(request.user, context={'request': request})
+        serializer = UserSerializer(request.user, context={"request": request})
         return Response(serializer.data)
 
 
@@ -42,11 +67,13 @@ class Features(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
-        return Response({
-            'cloud_upload': bool(
-                getattr(settings, 'FCLOUD_BROWSER_APACHE_LIBCLOUD_PROVIDER', '')
-            ),
-        })
+        return Response(
+            {
+                "cloud_upload": bool(
+                    getattr(settings, "FCLOUD_BROWSER_APACHE_LIBCLOUD_PROVIDER", "")
+                ),
+            }
+        )
 
 
 class ProjectList(generics.ListCreateAPIView):
@@ -64,7 +91,7 @@ class ProjectList(generics.ListCreateAPIView):
 class ProjectDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
-    lookup_url_kwarg = 'project_id'
+    lookup_url_kwarg = "project_id"
     permission_classes = [IsAuthenticated & IsInProjectReadOnlyOrAdmin]
 
 
@@ -73,34 +100,40 @@ class StatisticsAPI(APIView):
     permission_classes = [IsAuthenticated & IsInProjectReadOnlyOrAdmin]
 
     def get(self, request, *args, **kwargs):
-        p = get_object_or_404(Project, pk=self.kwargs['project_id'])
+        p = get_object_or_404(Project, pk=self.kwargs["project_id"])
 
-        include = set(request.GET.getlist('include'))
+        include = set(request.GET.getlist("include"))
         response = {}
 
-        if not include or 'label' in include:
+        if not include or "label" in include:
             label_count, user_count = self.label_per_data(p)
-            response['label'] = label_count
+            response["label"] = label_count
             # TODO: Make user_label count chart
-            response['user_label'] = user_count
+            response["user_label"] = user_count
 
-        if not include or 'total' in include or 'remaining' in include or 'user' in include:
+        if (
+            not include
+            or "total" in include
+            or "remaining" in include
+            or "user" in include
+        ):
             progress = self.progress(project=p)
             response.update(progress)
 
         if include:
-            response = {key: value for (key, value) in response.items() if key in include}
+            response = {
+                key: value for (key, value) in response.items() if key in include
+            }
 
         return Response(response)
 
     @staticmethod
     def _get_user_completion_data(annotation_class, annotation_filter):
-        all_annotation_objects  = annotation_class.objects.filter(annotation_filter)
+        all_annotation_objects = annotation_class.objects.filter(annotation_filter)
         set_user_data = collections.defaultdict(set)
-        for ind_obj in all_annotation_objects.values('user__username', 'document__id'):
-            set_user_data[ind_obj['user__username']].add(ind_obj['document__id'])
+        for ind_obj in all_annotation_objects.values("user__username", "document__id"):
+            set_user_data[ind_obj["user__username"]].add(ind_obj["document__id"])
         return {i: len(set_user_data[i]) for i in set_user_data}
-
 
     def progress(self, project):
         docs = project.documents
@@ -110,10 +143,11 @@ class StatisticsAPI(APIView):
         user_data = self._get_user_completion_data(annotation_class, annotation_filter)
         if not project.collaborative_annotation:
             annotation_filter &= Q(user_id=self.request.user)
-        done = annotation_class.objects.filter(annotation_filter)\
-            .aggregate(Count('document', distinct=True))['document__count']
+        done = annotation_class.objects.filter(annotation_filter).aggregate(
+            Count("document", distinct=True)
+        )["document__count"]
         remaining = total - done
-        return {'total': total, 'remaining': remaining, 'user': user_data}
+        return {"total": total, "remaining": remaining, "user": user_data}
 
     def label_per_data(self, project):
         annotation_class = project.get_annotation_class()
@@ -124,8 +158,8 @@ class ApproveLabelsAPI(APIView):
     permission_classes = [IsAuthenticated & (IsAnnotationApprover | IsProjectAdmin)]
 
     def post(self, request, *args, **kwargs):
-        approved = self.request.data.get('approved', True)
-        document = get_object_or_404(Document, pk=self.kwargs['doc_id'])
+        approved = self.request.data.get("approved", True)
+        document = get_object_or_404(Document, pk=self.kwargs["doc_id"])
         document.annotations_approved_by = self.request.user if approved else None
         document.save()
         return Response(DocumentSerializer(document).data)
@@ -137,50 +171,61 @@ class LabelList(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated & IsInProjectReadOnlyOrAdmin]
 
     def get_queryset(self):
-        project = get_object_or_404(Project, pk=self.kwargs['project_id'])
+        project = get_object_or_404(Project, pk=self.kwargs["project_id"])
         return project.labels
 
     def perform_create(self, serializer):
-        project = get_object_or_404(Project, pk=self.kwargs['project_id'])
+        project = get_object_or_404(Project, pk=self.kwargs["project_id"])
         serializer.save(project=project)
 
 
 class LabelDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Label.objects.all()
     serializer_class = LabelSerializer
-    lookup_url_kwarg = 'label_id'
+    lookup_url_kwarg = "label_id"
     permission_classes = [IsAuthenticated & IsInProjectReadOnlyOrAdmin]
 
 
 class DocumentList(generics.ListCreateAPIView):
     serializer_class = DocumentSerializer
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
-    search_fields = ('text', )
-    ordering_fields = ('created_at', 'updated_at', 'doc_annotations__updated_at',
-                       'seq_annotations__updated_at', 'seq2seq_annotations__updated_at')
+    filter_backends = (
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    )
+    search_fields = ("text",)
+    ordering_fields = (
+        "created_at",
+        "updated_at",
+        "doc_annotations__updated_at",
+        "seq_annotations__updated_at",
+        "seq2seq_annotations__updated_at",
+    )
     filter_class = DocumentFilter
     permission_classes = [IsAuthenticated & IsInProjectReadOnlyOrAdmin]
 
     def get_queryset(self):
-        project = get_object_or_404(Project, pk=self.kwargs['project_id'])
+        project = get_object_or_404(Project, pk=self.kwargs["project_id"])
 
         queryset = project.documents
         if project.randomize_document_order:
-            queryset = queryset.annotate(sort_id=F('id') % self.request.user.id).order_by('sort_id')
+            queryset = queryset.annotate(
+                sort_id=F("id") % self.request.user.id
+            ).order_by("sort_id")
         else:
-            queryset = queryset.order_by('id')
+            queryset = queryset.order_by("id")
 
         return queryset
 
     def perform_create(self, serializer):
-        project = get_object_or_404(Project, pk=self.kwargs['project_id'])
+        project = get_object_or_404(Project, pk=self.kwargs["project_id"])
         serializer.save(project=project)
 
 
 class DocumentDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Document.objects.all()
     serializer_class = DocumentSerializer
-    lookup_url_kwarg = 'doc_id'
+    lookup_url_kwarg = "doc_id"
     permission_classes = [IsAuthenticated & IsInProjectReadOnlyOrAdmin]
 
 
@@ -190,40 +235,43 @@ class AnnotationList(generics.ListCreateAPIView):
     swagger_schema = None
 
     def get_serializer_class(self):
-        project = get_object_or_404(Project, pk=self.kwargs['project_id'])
+        project = get_object_or_404(Project, pk=self.kwargs["project_id"])
         self.serializer_class = project.get_annotation_serializer()
         return self.serializer_class
 
     def get_queryset(self):
-        project = get_object_or_404(Project, pk=self.kwargs['project_id'])
+        project = get_object_or_404(Project, pk=self.kwargs["project_id"])
         model = project.get_annotation_class()
 
-        queryset = model.objects.filter(document=self.kwargs['doc_id'])
+        queryset = model.objects.filter(document=self.kwargs["doc_id"])
         if not project.collaborative_annotation:
             queryset = queryset.filter(user=self.request.user)
 
         return queryset
 
     def create(self, request, *args, **kwargs):
-        request.data['document'] = self.kwargs['doc_id']
+        request.data["document"] = self.kwargs["doc_id"]
         return super().create(request, args, kwargs)
 
     def perform_create(self, serializer):
-        serializer.save(document_id=self.kwargs['doc_id'], user=self.request.user)
+        serializer.save(document_id=self.kwargs["doc_id"], user=self.request.user)
 
 
 class AnnotationDetail(generics.RetrieveUpdateDestroyAPIView):
-    lookup_url_kwarg = 'annotation_id'
-    permission_classes = [IsAuthenticated & (((IsAnnotator | IsAnnotationApprover) & IsOwnAnnotation) | IsProjectAdmin)]
+    lookup_url_kwarg = "annotation_id"
+    permission_classes = [
+        IsAuthenticated
+        & (((IsAnnotator | IsAnnotationApprover) & IsOwnAnnotation) | IsProjectAdmin)
+    ]
     swagger_schema = None
 
     def get_serializer_class(self):
-        project = get_object_or_404(Project, pk=self.kwargs['project_id'])
+        project = get_object_or_404(Project, pk=self.kwargs["project_id"])
         self.serializer_class = project.get_annotation_serializer()
         return self.serializer_class
 
     def get_queryset(self):
-        project = get_object_or_404(Project, pk=self.kwargs['project_id'])
+        project = get_object_or_404(Project, pk=self.kwargs["project_id"])
         model = project.get_annotation_class()
         self.queryset = model.objects.all()
         return self.queryset
@@ -234,14 +282,14 @@ class TextUploadAPI(APIView):
     permission_classes = [IsAuthenticated & IsProjectAdmin]
 
     def post(self, request, *args, **kwargs):
-        if 'file' not in request.data:
-            raise ParseError('Empty content')
+        if "file" not in request.data:
+            raise ParseError("Empty content")
 
         self.save_file(
             user=request.user,
-            file=request.data['file'],
-            file_format=request.data['format'],
-            project_id=kwargs['project_id'],
+            file=request.data["file"],
+            file_format=request.data["format"],
+            project_id=kwargs["project_id"],
         )
 
         return Response(status=status.HTTP_201_CREATED)
@@ -256,18 +304,18 @@ class TextUploadAPI(APIView):
 
     @classmethod
     def select_parser(cls, file_format):
-        if file_format == 'plain':
+        if file_format == "plain":
             return PlainTextParser()
-        elif file_format == 'csv':
+        elif file_format == "csv":
             return CSVParser()
-        elif file_format == 'json':
+        elif file_format == "json":
             return JSONParser()
-        elif file_format == 'conll':
+        elif file_format == "conll":
             return CoNLLParser()
-        elif file_format == 'excel':
+        elif file_format == "excel":
             return ExcelParser()
         else:
-            raise ValidationError('format {} is invalid.'.format(file_format))
+            raise ValidationError("format {} is invalid.".format(file_format))
 
 
 class CloudUploadAPI(APIView):
@@ -275,19 +323,21 @@ class CloudUploadAPI(APIView):
 
     def get(self, request, *args, **kwargs):
         try:
-            project_id = request.query_params['project_id']
-            file_format = request.query_params['upload_format']
-            cloud_container = request.query_params['container']
-            cloud_object = request.query_params['object']
+            project_id = request.query_params["project_id"]
+            file_format = request.query_params["upload_format"]
+            cloud_container = request.query_params["container"]
+            cloud_object = request.query_params["object"]
         except KeyError as ex:
-            raise ValidationError('query parameter {} is missing'.format(ex))
+            raise ValidationError("query parameter {} is missing".format(ex))
 
         try:
             cloud_file = self.get_cloud_object_as_io(cloud_container, cloud_object)
         except ContainerDoesNotExistError:
-            raise ValidationError('cloud container {} does not exist'.format(cloud_container))
+            raise ValidationError(
+                "cloud container {} does not exist".format(cloud_container)
+            )
         except ObjectDoesNotExistError:
-            raise ValidationError('cloud object {} does not exist'.format(cloud_object))
+            raise ValidationError("cloud object {} does not exist".format(cloud_object))
 
         TextUploadAPI.save_file(
             user=request.user,
@@ -296,10 +346,12 @@ class CloudUploadAPI(APIView):
             project_id=project_id,
         )
 
-        next_url = request.query_params.get('next')
+        next_url = request.query_params.get("next")
 
-        if next_url == 'about:blank':
-            return Response(data='', content_type='text/plain', status=status.HTTP_201_CREATED)
+        if next_url == "about:blank":
+            return Response(
+                data="", content_type="text/plain", status=status.HTTP_201_CREATED
+            )
 
         if next_url:
             return redirect(next_url)
@@ -308,9 +360,11 @@ class CloudUploadAPI(APIView):
 
     @classmethod
     def get_cloud_object_as_io(cls, container_name, object_name):
-        provider = getattr(settings, 'CLOUD_BROWSER_APACHE_LIBCLOUD_PROVIDER', '').lower()
-        account = getattr(settings, 'CLOUD_BROWSER_APACHE_LIBCLOUD_ACCOUNT', None)
-        key = getattr(settings, 'CLOUD_BROWSER_APACHE_LIBCLOUD_SECRET_KEY')
+        provider = getattr(
+            settings, "CLOUD_BROWSER_APACHE_LIBCLOUD_PROVIDER", ""
+        ).lower()
+        account = getattr(settings, "CLOUD_BROWSER_APACHE_LIBCLOUD_ACCOUNT", None)
+        key = getattr(settings, "CLOUD_BROWSER_APACHE_LIBCLOUD_SECRET_KEY")
 
         driver = get_driver(DriverType.STORAGE, provider)
         client = driver(account, key)
@@ -327,8 +381,8 @@ class TextDownloadAPI(APIView):
     renderer_classes = (CSVRenderer, JSONLRenderer)
 
     def get(self, request, *args, **kwargs):
-        format = request.query_params.get('q')
-        project = get_object_or_404(Project, pk=self.kwargs['project_id'])
+        format = request.query_params.get("q")
+        project = get_object_or_404(Project, pk=self.kwargs["project_id"])
         documents = project.documents.all()
         painter = self.select_painter(format)
         # json1 format prints text labels while json format prints annotations with label ids
@@ -342,12 +396,12 @@ class TextDownloadAPI(APIView):
         return Response(data)
 
     def select_painter(self, format):
-        if format == 'csv':
+        if format == "csv":
             return CSVPainter()
-        elif format == 'json' or format == "json1":
+        elif format == "json" or format == "json1":
             return JSONPainter()
         else:
-            raise ValidationError('format {} is invalid.'.format(format))
+            raise ValidationError("format {} is invalid.".format(format))
 
 
 class Users(APIView):
@@ -372,18 +426,18 @@ class RoleMappingList(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated & IsProjectAdmin]
 
     def get_queryset(self):
-        project = get_object_or_404(Project, pk=self.kwargs['project_id'])
+        project = get_object_or_404(Project, pk=self.kwargs["project_id"])
         return project.role_mappings
 
     def perform_create(self, serializer):
-        project = get_object_or_404(Project, pk=self.kwargs['project_id'])
+        project = get_object_or_404(Project, pk=self.kwargs["project_id"])
         serializer.save(project=project)
 
 
 class RoleMappingDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = RoleMapping.objects.all()
     serializer_class = RoleMappingSerializer
-    lookup_url_kwarg = 'rolemapping_id'
+    lookup_url_kwarg = "rolemapping_id"
     permission_classes = [IsAuthenticated & IsProjectAdmin]
 
 
@@ -393,10 +447,10 @@ class LabelUploadAPI(APIView):
 
     @transaction.atomic
     def post(self, request, *args, **kwargs):
-        if 'file' not in request.data:
-            raise ParseError('Empty content')
-        labels = json.load(request.data['file'])
-        project = get_object_or_404(Project, pk=kwargs['project_id'])
+        if "file" not in request.data:
+            raise ParseError("Empty content")
+        labels = json.load(request.data["file"])
+        project = get_object_or_404(Project, pk=kwargs["project_id"])
         try:
             for label in labels:
                 serializer = LabelSerializer(data=label)
@@ -404,5 +458,7 @@ class LabelUploadAPI(APIView):
                 serializer.save(project=project)
             return Response(status=status.HTTP_201_CREATED)
         except IntegrityError:
-            content = {'error': 'IntegrityError: you cannot create a label with same name or shortkey.'}
+            content = {
+                "error": "IntegrityError: you cannot create a label with same name or shortkey."
+            }
             return Response(content, status=status.HTTP_400_BAD_REQUEST)
