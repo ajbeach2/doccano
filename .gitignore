@@ -197,7 +197,6 @@ pip-selfcheck.json
 
 # ignore webpack state
 node_modules/
-bundle/
 webpack-stats.json
 
 .vscode
