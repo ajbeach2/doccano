@@ -32,6 +32,6 @@ Add doccano to your urls.py
 ```python
 # urls.py
 urlpattersn = [
-    path('/doccano/', include('doccano.urls')
+    path('doccano/', include('doccano.urls')
 ]
 ```
