@@ -20,7 +20,7 @@ from .serializers import DocumentSerializer, LabelSerializer
 
 
 def get_upload_batch_size():
-    return getattr(settings, IMPORT_BATCH_SIZE, 500)
+    return getattr(settings, 'IMPORT_BATCH_SIZE', 500)
 
 
 def extract_label(tag):

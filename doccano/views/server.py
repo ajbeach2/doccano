@@ -10,6 +10,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from doccano.permissions import ProjectAdminMixin
 from doccano.models import Project, RoleMapping
 from django.conf import settings
+from doccano.conf import (get_projet_admin_role)
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +26,7 @@ class ProjectView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         project = get_object_or_404(Project, pk=self.kwargs["project_id"])
         context["is_project_admin"] = RoleMapping.objects.filter(
-            role_id__name=settings.ROLE_PROJECT_ADMIN,
+            role_id__name=get_projet_admin_role(),
             project=project.id,
             user=self.request.user.id,
         ).exists()
