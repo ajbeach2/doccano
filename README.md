@@ -5,6 +5,10 @@ This is a fork of https://github.com/doccano/doccano that integrates directly wi
 
 ## Installation
 
+```bash
+pip install pip install -e git+https://git@github.com/ajbeach2/doccano@master#egg=django-doccano
+```
+
 Ensure the follow appas are installed in settings.py;
 
 ```python
