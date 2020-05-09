@@ -23,3 +23,10 @@ INSTALLED_APPS = [
     'doccano',
 ]
 ```
+
+Add doccano to your urls.py
+```
+urlpattersn = [
+path('/doccano/', include('doccano.urls')
+]
+```
