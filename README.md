@@ -3,7 +3,7 @@
 This is a fork of https://github.com/doccano/doccano that integrates directly with existing django project. This does not require running a seperate single page application
 
 
-## Installatoin
+## Installation
 
 Ensure the follow appas are installed in settings.py;
 
