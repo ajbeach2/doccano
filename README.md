@@ -27,6 +27,6 @@ INSTALLED_APPS = [
 Add doccano to your urls.py
 ```python
 urlpattersn = [
-path('/doccano/', include('doccano.urls')
+    path('/doccano/', include('doccano.urls')
 ]
 ```
