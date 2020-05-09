@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load static %}
+{% block header %}
+<link rel="stylesheet" href="{% static 'assets/css/annotation.css' %}">
+{% endblock %}
+{% block navigation %}
+{% if is_project_admin and 'project_id' in view.kwargs %}
+<a class="navbar-item" href="{% url 'dataset' view.kwargs.project_id %}">
+  <span class="icon">
+    <i class="fas fa-edit"></i>
+  </span>
+  <b>Edit Data</b>
+</a>
+{% endif %}
+{% endblock %}
+{% block content %}
+<div id="mail-app"></div>
+{% endblock %}
+{% block footer %}
+<script src="{% static bundle_name %}"></script>
+{% endblock %}
