@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+{% block content %}
+<div id="projects_root"></div>
+{% endblock %}
+{% block footer %}
+<script src="{% static 'bundle/projects.js' %}"></script>
+{% endblock %}
