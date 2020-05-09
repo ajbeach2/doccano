@@ -8,7 +8,7 @@ This is a fork of https://github.com/doccano/doccano that integrates directly wi
 Ensure the follow appas are installed in settings.py;
 
 ```python
-# Application definition
+# settings.py
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -26,6 +26,7 @@ INSTALLED_APPS = [
 
 Add doccano to your urls.py
 ```python
+# urls.py
 urlpattersn = [
     path('/doccano/', include('doccano.urls')
 ]
