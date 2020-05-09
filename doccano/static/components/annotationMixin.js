@@ -160,7 +160,12 @@ export default {
 
     async search() {
       await HTTP.get(this.url).then((response) => {
-        this.docs = response.data;
+        let docs = response.data
+        if ( docs.results) {
+          this.docs = docs.results
+        } else {
+          this.docs = docs
+        }
         this.next = removeHost(response.data.next);
         this.prev = removeHost(response.data.previous);
         this.count = response.data.count;
@@ -260,7 +265,13 @@ export default {
     HTTP.get().then((response) => {
       this.guideline = response.data.guideline;
       const roles = response.data.current_users_role;
-      this.isAnnotationApprover = roles.is_annotation_approver || roles.is_project_admin;
+      if (roles) {
+        this.isAnnotationApprover = roles.is_annotation_approver || roles.is_project_admin;
+      }
+      else {
+        this.isAnnotationApprover = false;
+      }
+      
     });
     this.submit();
   },

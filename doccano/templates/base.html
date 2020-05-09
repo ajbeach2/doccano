@@ -54,7 +54,7 @@
       <div id="topNav" class="navbar-menu">
         <div class="navbar-end">
           {% if not user.is_authenticated %}
-          <div class="navbar-item has-dropdown is-hoverable">
+<!--      <div class="navbar-item has-dropdown is-hoverable">
             <a class="navbar-link">
               <span>Live Demo</span>
             </a>
@@ -69,10 +69,10 @@
                 Translation
               </a>
             </div>
-          </div>
-          <a class="navbar-item" href="https://github.com/doccano/doccano">
+          </div> -->
+<!--      <a class="navbar-item" href="https://github.com/doccano/doccano">
             <span>GitHub</span>
-          </a>
+          </a> -->
           {% endif %}
           {% if user.is_authenticated %}
           <a class="navbar-item" href="{% url 'projects' %}">
@@ -80,7 +80,7 @@
           </a>
           {% endif %}
           {% if not user.is_authenticated %}
-          <a class="navbar-item" href="{% url 'admin:login' %}">
+          <a class="navbar-item" href="{% url 'admin:login'%}?next={% url 'projects' %}">
             <span>Login</span>
           </a>
           {% else %}
