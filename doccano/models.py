@@ -11,35 +11,35 @@ from django.core.exceptions import ValidationError
 from polymorphic.models import PolymorphicModel
 
 from .managers import AnnotationManager, Seq2seqAnnotationManager
-from .conf import(
+from .conf import (
     get_annotator_role,
     get_annotation_approver_role,
-    get_projet_admin_role
+    get_projet_admin_role,
 )
 
-DOCUMENT_CLASSIFICATION = 'DocumentClassification'
-SEQUENCE_LABELING = 'SequenceLabeling'
-SEQ2SEQ = 'Seq2seq'
+DOCUMENT_CLASSIFICATION = "DocumentClassification"
+SEQUENCE_LABELING = "SequenceLabeling"
+SEQ2SEQ = "Seq2seq"
 PROJECT_CHOICES = (
-    (DOCUMENT_CLASSIFICATION, 'document classification'),
-    (SEQUENCE_LABELING, 'sequence labeling'),
-    (SEQ2SEQ, 'sequence to sequence'),
+    (DOCUMENT_CLASSIFICATION, "document classification"),
+    (SEQUENCE_LABELING, "sequence labeling"),
+    (SEQ2SEQ, "sequence to sequence"),
 )
 
 
 class Project(PolymorphicModel):
     name = models.CharField(max_length=100)
-    description = models.TextField(default='')
-    guideline = models.TextField(default='')
+    description = models.TextField(default="")
+    guideline = models.TextField(default="")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    users = models.ManyToManyField(User, related_name='projects')
+    users = models.ManyToManyField(User, related_name="projects")
     project_type = models.CharField(max_length=30, choices=PROJECT_CHOICES)
     randomize_document_order = models.BooleanField(default=False)
     collaborative_annotation = models.BooleanField(default=False)
 
     def get_absolute_url(self):
-        return reverse('upload', args=[self.id])
+        return reverse("upload", args=[self.id])
 
     @property
     def image(self):
@@ -68,22 +68,22 @@ class Project(PolymorphicModel):
 
 
 class TextClassificationProject(Project):
-
     @property
     def image(self):
-        return staticfiles_storage.url('assets/images/cats/text_classification.jpg')
+        return staticfiles_storage.url("assets/images/cats/text_classification.jpg")
 
     def get_bundle_name(self):
-        return 'document_classification.js'
+        return "document_classification.js"
 
     def get_bundle_name_upload(self):
-        return 'upload_text_classification.js'
+        return "upload_text_classification.js"
 
     def get_bundle_name_download(self):
-        return 'download_text_classification.js'
+        return "download_text_classification.js"
 
     def get_annotation_serializer(self):
         from .serializers import DocumentAnnotationSerializer
+
         return DocumentAnnotationSerializer
 
     def get_annotation_class(self):
@@ -91,26 +91,27 @@ class TextClassificationProject(Project):
 
     def get_storage(self, data):
         from .utils import ClassificationStorage
+
         return ClassificationStorage(data, self)
 
 
 class SequenceLabelingProject(Project):
-
     @property
     def image(self):
-        return staticfiles_storage.url('assets/images/cats/sequence_labeling.jpg')
+        return staticfiles_storage.url("assets/images/cats/sequence_labeling.jpg")
 
     def get_bundle_name(self):
-        return 'sequence_labeling.js'
+        return "sequence_labeling.js"
 
     def get_bundle_name_upload(self):
-        return 'upload_sequence_labeling.js'
+        return "upload_sequence_labeling.js"
 
     def get_bundle_name_download(self):
-        return 'download_sequence_labeling.js'
+        return "download_sequence_labeling.js"
 
     def get_annotation_serializer(self):
         from .serializers import SequenceAnnotationSerializer
+
         return SequenceAnnotationSerializer
 
     def get_annotation_class(self):
@@ -118,26 +119,27 @@ class SequenceLabelingProject(Project):
 
     def get_storage(self, data):
         from .utils import SequenceLabelingStorage
+
         return SequenceLabelingStorage(data, self)
 
 
 class Seq2seqProject(Project):
-
     @property
     def image(self):
-        return staticfiles_storage.url('assets/images/cats/seq2seq.jpg')
+        return staticfiles_storage.url("assets/images/cats/seq2seq.jpg")
 
     def get_bundle_name(self):
-        return 'seq2seq.js'
+        return "seq2seq.js"
 
     def get_bundle_name_upload(self):
-        return 'upload_seq2seq.js'
+        return "upload_seq2seq.js"
 
     def get_bundle_name_download(self):
-        return 'download_seq2seq.js'
+        return "download_seq2seq.js"
 
     def get_annotation_serializer(self):
         from .serializers import Seq2seqAnnotationSerializer
+
         return Seq2seqAnnotationSerializer
 
     def get_annotation_class(self):
@@ -145,25 +147,26 @@ class Seq2seqProject(Project):
 
     def get_storage(self, data):
         from .utils import Seq2seqStorage
+
         return Seq2seqStorage(data, self)
 
 
 class Label(models.Model):
-    PREFIX_KEYS = (
-        ('ctrl', 'ctrl'),
-        ('shift', 'shift'),
-        ('ctrl shift', 'ctrl shift')
-    )
-    SUFFIX_KEYS = tuple(
-        (c, c) for c in string.digits + string.ascii_lowercase
-    )
+    PREFIX_KEYS = (("ctrl", "ctrl"), ("shift", "shift"), ("ctrl shift", "ctrl shift"))
+    SUFFIX_KEYS = tuple((c, c) for c in string.digits + string.ascii_lowercase)
 
     text = models.CharField(max_length=100)
-    prefix_key = models.CharField(max_length=10, blank=True, null=True, choices=PREFIX_KEYS)
-    suffix_key = models.CharField(max_length=1, blank=True, null=True, choices=SUFFIX_KEYS)
-    project = models.ForeignKey(Project, related_name='labels', on_delete=models.CASCADE)
-    background_color = models.CharField(max_length=7, default='#209cee')
-    text_color = models.CharField(max_length=7, default='#ffffff')
+    prefix_key = models.CharField(
+        max_length=10, blank=True, null=True, choices=PREFIX_KEYS
+    )
+    suffix_key = models.CharField(
+        max_length=1, blank=True, null=True, choices=SUFFIX_KEYS
+    )
+    project = models.ForeignKey(
+        Project, related_name="labels", on_delete=models.CASCADE
+    )
+    background_color = models.CharField(max_length=7, default="#209cee")
+    text_color = models.CharField(max_length=7, default="#ffffff")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -173,29 +176,35 @@ class Label(models.Model):
     def clean(self):
         # Don't allow shortcut key not to have a suffix key.
         if self.prefix_key and not self.suffix_key:
-            raise ValidationError('Shortcut key may not have a suffix key.')
+            raise ValidationError("Shortcut key may not have a suffix key.")
 
         # each shortcut (prefix key + suffix key) can only be assigned to one label
         if self.suffix_key or self.prefix_key:
             other_labels = self.project.labels.exclude(id=self.id)
-            if other_labels.filter(suffix_key=self.suffix_key, prefix_key=self.prefix_key).exists():
-                raise ValidationError('A label with this shortcut already exists in the project')
+            if other_labels.filter(
+                suffix_key=self.suffix_key, prefix_key=self.prefix_key
+            ).exists():
+                raise ValidationError(
+                    "A label with this shortcut already exists in the project"
+                )
 
         super().clean()
 
     class Meta:
-        unique_together = (
-            ('project', 'text'),
-        )
+        unique_together = (("project", "text"),)
 
 
 class Document(models.Model):
     text = models.TextField()
-    project = models.ForeignKey(Project, related_name='documents', on_delete=models.CASCADE)
-    meta = models.TextField(default='{}')
+    project = models.ForeignKey(
+        Project, related_name="documents", on_delete=models.CASCADE
+    )
+    meta = models.TextField(default="{}")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    annotations_approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    annotations_approved_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True
+    )
 
     def __str__(self):
         return self.text[:50]
@@ -215,41 +224,47 @@ class Annotation(models.Model):
 
 
 class DocumentAnnotation(Annotation):
-    document = models.ForeignKey(Document, related_name='doc_annotations', on_delete=models.CASCADE)
+    document = models.ForeignKey(
+        Document, related_name="doc_annotations", on_delete=models.CASCADE
+    )
     label = models.ForeignKey(Label, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ('document', 'user', 'label')
+        unique_together = ("document", "user", "label")
 
 
 class SequenceAnnotation(Annotation):
-    document = models.ForeignKey(Document, related_name='seq_annotations', on_delete=models.CASCADE)
+    document = models.ForeignKey(
+        Document, related_name="seq_annotations", on_delete=models.CASCADE
+    )
     label = models.ForeignKey(Label, on_delete=models.CASCADE)
     start_offset = models.IntegerField()
     end_offset = models.IntegerField()
 
     def clean(self):
         if self.start_offset >= self.end_offset:
-            raise ValidationError('start_offset is after end_offset')
+            raise ValidationError("start_offset is after end_offset")
 
     class Meta:
-        unique_together = ('document', 'user', 'label', 'start_offset', 'end_offset')
+        unique_together = ("document", "user", "label", "start_offset", "end_offset")
 
 
 class Seq2seqAnnotation(Annotation):
     # Override AnnotationManager for custom functionality
     objects = Seq2seqAnnotationManager()
 
-    document = models.ForeignKey(Document, related_name='seq2seq_annotations', on_delete=models.CASCADE)
+    document = models.ForeignKey(
+        Document, related_name="seq2seq_annotations", on_delete=models.CASCADE
+    )
     text = models.CharField(max_length=500)
 
     class Meta:
-        unique_together = ('document', 'user', 'text')
+        unique_together = ("document", "user", "text")
 
 
 class Role(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    description = models.TextField(default='')
+    description = models.TextField(default="")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -258,8 +273,12 @@ class Role(models.Model):
 
 
 class RoleMapping(models.Model):
-    user = models.ForeignKey(User, related_name='role_mappings', on_delete=models.CASCADE)
-    project = models.ForeignKey(Project, related_name='role_mappings', on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        User, related_name="role_mappings", on_delete=models.CASCADE
+    )
+    project = models.ForeignKey(
+        Project, related_name="role_mappings", on_delete=models.CASCADE
+    )
     role = models.ForeignKey(Role, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -268,7 +287,9 @@ class RoleMapping(models.Model):
         other_rolemappings = self.project.role_mappings.exclude(id=self.id)
 
         if other_rolemappings.filter(user=self.user, project=self.project).exists():
-            raise ValidationError('This user is already assigned to a role in this project.')
+            raise ValidationError(
+                "This user is already assigned to a role in this project."
+            )
 
     class Meta:
         unique_together = ("user", "project", "role")
@@ -297,8 +318,12 @@ def add_superusers_to_project(sender, instance, created, **kwargs):
     admin_role = Role.objects.filter(name=get_projet_admin_role()).first()
     if superusers and admin_role:
         RoleMapping.objects.bulk_create(
-            [RoleMapping(role_id=admin_role.id, user_id=superuser.id, project_id=instance.id)
-             for superuser in superusers]
+            [
+                RoleMapping(
+                    role_id=admin_role.id, user_id=superuser.id, project_id=instance.id
+                )
+                for superuser in superusers
+            ]
         )
 
 
@@ -309,8 +334,14 @@ def add_new_superuser_to_projects(sender, instance, created, **kwargs):
         projects = Project.objects.all()
         if admin_role and projects:
             RoleMapping.objects.bulk_create(
-                [RoleMapping(role_id=admin_role.id, user_id=instance.id, project_id=project.id)
-                 for project in projects]
+                [
+                    RoleMapping(
+                        role_id=admin_role.id,
+                        user_id=instance.id,
+                        project_id=project.id,
+                    )
+                    for project in projects
+                ]
             )
 
 

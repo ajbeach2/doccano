@@ -5,20 +5,20 @@ from django.shortcuts import get_object_or_404
 from rest_framework.permissions import BasePermission, SAFE_METHODS, IsAdminUser
 
 from .models import Project, Role, RoleMapping
-from .conf import(
+from .conf import (
     get_annotator_role,
     get_annotation_approver_role,
-    get_projet_admin_role
+    get_projet_admin_role,
 )
+
 
 class ProjectMixin:
     @classmethod
     def get_project_id(self, request, view):
-        return view.kwargs.get('project_id') or request.query_params.get('project_id')
+        return view.kwargs.get("project_id") or request.query_params.get("project_id")
 
 
 class IsAdminUserAndWriteOnly(BasePermission):
-
     def has_permission(self, request, view):
         if request.method in SAFE_METHODS:
             return True
@@ -31,18 +31,17 @@ class ProjectAdminMixin(UserPassesTestMixin):
         return self.request.user.is_superuser or is_in_role(
             role_name=IsProjectAdmin.role_name,
             user_id=self.request.user.id,
-            project_id=self.kwargs['project_id'],
+            project_id=self.kwargs["project_id"],
         )
 
 
 class IsOwnAnnotation(ProjectMixin, BasePermission):
-
     def has_permission(self, request, view):
         if request.user.is_superuser:
             return True
 
         project_id = self.get_project_id(request, view)
-        annotation_id = view.kwargs.get('annotation_id')
+        annotation_id = view.kwargs.get("annotation_id")
         project = get_object_or_404(Project, pk=project_id)
         model = project.get_annotation_class()
         annotation = model.objects.filter(id=annotation_id, user=request.user)
@@ -51,9 +50,9 @@ class IsOwnAnnotation(ProjectMixin, BasePermission):
 
 
 class RolePermission(ProjectMixin, BasePermission):
-    UNSAFE_METHODS = ('POST', 'PATCH', 'DELETE')
+    UNSAFE_METHODS = ("POST", "PATCH", "DELETE")
     unsafe_methods_check = True
-    role_name = ''
+    role_name = ""
 
     def has_permission(self, request, view):
         if request.user.is_superuser:
@@ -96,5 +95,5 @@ def is_in_role(role_name, user_id, project_id):
     return RoleMapping.objects.filter(
         user_id=user_id,
         project_id=project_id,
-        role_id=Subquery(Role.objects.filter(name=role_name).values('id')),
+        role_id=Subquery(Role.objects.filter(name=role_name).values("id")),
     ).exists()

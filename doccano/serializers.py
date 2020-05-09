@@ -9,24 +9,23 @@ from rest_framework.exceptions import ValidationError
 from .models import Label, Project, Document, RoleMapping, Role
 from .models import TextClassificationProject, SequenceLabelingProject, Seq2seqProject
 from .models import DocumentAnnotation, SequenceAnnotation, Seq2seqAnnotation
-from .conf import(
+from .conf import (
     get_annotator_role,
     get_annotation_approver_role,
-    get_projet_admin_role
+    get_projet_admin_role,
 )
 
-class UserSerializer(serializers.ModelSerializer):
 
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
-        fields = ('id', 'username', 'first_name', 'last_name', 'email', 'is_superuser')
+        fields = ("id", "username", "first_name", "last_name", "email", "is_superuser")
 
 
 class LabelSerializer(serializers.ModelSerializer):
-
     def validate(self, attrs):
-        prefix_key = attrs.get('prefix_key')
-        suffix_key = attrs.get('suffix_key')
+        prefix_key = attrs.get("prefix_key")
+        suffix_key = attrs.get("suffix_key")
 
         # In the case of user don't set any shortcut key.
         if prefix_key is None and suffix_key is None:
@@ -34,33 +33,38 @@ class LabelSerializer(serializers.ModelSerializer):
 
         # Don't allow shortcut key not to have a suffix key.
         if prefix_key and not suffix_key:
-            raise ValidationError('Shortcut key may not have a suffix key.')
+            raise ValidationError("Shortcut key may not have a suffix key.")
 
         # Don't allow to save same shortcut key when prefix_key is null.
         try:
-            context = self.context['request'].parser_context
-            project_id = context['kwargs']['project_id']
-            label_id = context['kwargs'].get('label_id')
+            context = self.context["request"].parser_context
+            project_id = context["kwargs"]["project_id"]
+            label_id = context["kwargs"].get("label_id")
         except (AttributeError, KeyError):
             pass  # unit tests don't always have the correct context set up
         else:
             conflicting_labels = Label.objects.filter(
-                suffix_key=suffix_key,
-                prefix_key=prefix_key,
-                project=project_id,
+                suffix_key=suffix_key, prefix_key=prefix_key, project=project_id,
             )
 
             if label_id is not None:
                 conflicting_labels = conflicting_labels.exclude(id=label_id)
 
             if conflicting_labels.exists():
-                raise ValidationError('Duplicate shortcut key.')
+                raise ValidationError("Duplicate shortcut key.")
 
         return super().validate(attrs)
 
     class Meta:
         model = Label
-        fields = ('id', 'text', 'prefix_key', 'suffix_key', 'background_color', 'text_color')
+        fields = (
+            "id",
+            "text",
+            "prefix_key",
+            "suffix_key",
+            "background_color",
+            "text_color",
+        )
 
 
 class DocumentSerializer(serializers.ModelSerializer):
@@ -68,7 +72,7 @@ class DocumentSerializer(serializers.ModelSerializer):
     annotation_approver = serializers.SerializerMethodField()
 
     def get_annotations(self, instance):
-        request = self.context.get('request')
+        request = self.context.get("request")
         project = instance.project
         model = project.get_annotation_class()
         serializer = project.get_annotation_serializer()
@@ -85,7 +89,7 @@ class DocumentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Document
-        fields = ('id', 'text', 'annotations', 'meta', 'annotation_approver')
+        fields = ("id", "text", "annotations", "meta", "annotation_approver")
 
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -108,13 +112,23 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ('id', 'name', 'description', 'guideline', 'users', 'current_users_role', 'project_type', 'image',
-                  'updated_at', 'randomize_document_order', 'collaborative_annotation')
-        read_only_fields = ('image', 'updated_at', 'users', 'current_users_role')
+        fields = (
+            "id",
+            "name",
+            "description",
+            "guideline",
+            "users",
+            "current_users_role",
+            "project_type",
+            "image",
+            "updated_at",
+            "randomize_document_order",
+            "collaborative_annotation",
+        )
+        read_only_fields = ("image", "updated_at", "users", "current_users_role")
 
 
 class TextClassificationProjectSerializer(ProjectSerializer):
-
     class Meta:
         model = TextClassificationProject
         fields = ProjectSerializer.Meta.fields
@@ -122,7 +136,6 @@ class TextClassificationProjectSerializer(ProjectSerializer):
 
 
 class SequenceLabelingProjectSerializer(ProjectSerializer):
-
     class Meta:
         model = SequenceLabelingProject
         fields = ProjectSerializer.Meta.fields
@@ -130,7 +143,6 @@ class SequenceLabelingProjectSerializer(ProjectSerializer):
 
 
 class Seq2seqProjectSerializer(ProjectSerializer):
-
     class Meta:
         model = Seq2seqProject
         fields = ProjectSerializer.Meta.fields
@@ -142,19 +154,18 @@ class ProjectPolymorphicSerializer(PolymorphicSerializer):
         Project: ProjectSerializer,
         TextClassificationProject: TextClassificationProjectSerializer,
         SequenceLabelingProject: SequenceLabelingProjectSerializer,
-        Seq2seqProject: Seq2seqProjectSerializer
+        Seq2seqProject: Seq2seqProjectSerializer,
     }
 
 
 class ProjectFilteredPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
-
     def get_queryset(self):
-        view = self.context.get('view', None)
-        request = self.context.get('request', None)
+        view = self.context.get("view", None)
+        request = self.context.get("request", None)
         queryset = super(ProjectFilteredPrimaryKeyRelatedField, self).get_queryset()
         if not request or not queryset or not view:
             return None
-        return queryset.filter(project=view.kwargs['project_id'])
+        return queryset.filter(project=view.kwargs["project_id"])
 
 
 class DocumentAnnotationSerializer(serializers.ModelSerializer):
@@ -164,19 +175,27 @@ class DocumentAnnotationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DocumentAnnotation
-        fields = ('id', 'prob', 'label', 'user', 'document')
-        read_only_fields = ('user', )
+        fields = ("id", "prob", "label", "user", "document")
+        read_only_fields = ("user",)
 
 
 class SequenceAnnotationSerializer(serializers.ModelSerializer):
-    #label = ProjectFilteredPrimaryKeyRelatedField(queryset=Label.objects.all())
+    # label = ProjectFilteredPrimaryKeyRelatedField(queryset=Label.objects.all())
     label = serializers.PrimaryKeyRelatedField(queryset=Label.objects.all())
     document = serializers.PrimaryKeyRelatedField(queryset=Document.objects.all())
 
     class Meta:
         model = SequenceAnnotation
-        fields = ('id', 'prob', 'label', 'start_offset', 'end_offset', 'user', 'document')
-        read_only_fields = ('user',)
+        fields = (
+            "id",
+            "prob",
+            "label",
+            "start_offset",
+            "end_offset",
+            "user",
+            "document",
+        )
+        read_only_fields = ("user",)
 
 
 class Seq2seqAnnotationSerializer(serializers.ModelSerializer):
@@ -184,14 +203,14 @@ class Seq2seqAnnotationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Seq2seqAnnotation
-        fields = ('id', 'text', 'user', 'document', 'prob')
-        read_only_fields = ('user',)
+        fields = ("id", "text", "user", "document", "prob")
+        read_only_fields = ("user",)
 
 
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Role
-        fields = ('id', 'name')
+        fields = ("id", "name")
 
 
 class RoleMappingSerializer(serializers.ModelSerializer):
@@ -210,4 +229,4 @@ class RoleMappingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RoleMapping
-        fields = ('id', 'user', 'role', 'username', 'rolename')
+        fields = ("id", "user", "role", "username", "rolename")

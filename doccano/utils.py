@@ -18,12 +18,13 @@ from .exceptions import FileParseException
 from .models import Label
 from .serializers import DocumentSerializer, LabelSerializer
 
+
 def get_upload_batch_size():
     return getattr(settings, IMPORT_BATCH_SIZE, 500)
 
 
 def extract_label(tag):
-    ptn = re.compile(r'(B|I|E|S)-(.+)')
+    ptn = re.compile(r"(B|I|E|S)-(.+)")
     m = ptn.match(tag)
     if m:
         return m.groups()[1]
@@ -32,7 +33,6 @@ def extract_label(tag):
 
 
 class BaseStorage(object):
-
     def __init__(self, data, project):
         self.data = data
         self.project = project
@@ -62,7 +62,7 @@ class BaseStorage(object):
 
     @classmethod
     def extract_label(cls, data):
-        return [d.get('labels', []) for d in data]
+        return [d.get("labels", []) for d in data]
 
     @classmethod
     def exclude_created_labels(cls, labels, created):
@@ -70,24 +70,29 @@ class BaseStorage(object):
 
     @classmethod
     def to_serializer_format(cls, labels, created):
-        existing_shortkeys = {(label.suffix_key, label.prefix_key)
-                              for label in created.values()}
+        existing_shortkeys = {
+            (label.suffix_key, label.prefix_key) for label in created.values()
+        }
 
         serializer_labels = []
 
         for label in sorted(labels):
-            serializer_label = {'text': label}
+            serializer_label = {"text": label}
 
             shortkey = cls.get_shortkey(label, existing_shortkeys)
             if shortkey:
-                serializer_label['suffix_key'] = shortkey[0]
-                serializer_label['prefix_key'] = shortkey[1]
+                serializer_label["suffix_key"] = shortkey[0]
+                serializer_label["prefix_key"] = shortkey[1]
                 existing_shortkeys.add(shortkey)
 
             background_color = Color(pick_for=label)
-            text_color = Color('white') if background_color.get_luminance() < 0.5 else Color('black')
-            serializer_label['background_color'] = background_color.hex
-            serializer_label['text_color'] = text_color.hex
+            text_color = (
+                Color("white")
+                if background_color.get_luminance() < 0.5
+                else Color("black")
+            )
+            serializer_label["background_color"] = background_color.hex
+            serializer_label["text_color"] = text_color.hex
 
             serializer_labels.append(serializer_label)
 
@@ -115,7 +120,6 @@ class BaseStorage(object):
 
 
 class PlainStorage(BaseStorage):
-
     @transaction.atomic
     def save(self, user):
         for text in self.data:
@@ -129,6 +133,7 @@ class ClassificationStorage(BaseStorage):
     {"text": "Python is awesome!", "labels": ["positive"]}
     ...
     """
+
     @transaction.atomic
     def save(self, user):
         saved_labels = {label.text: label for label in self.project.labels.all()}
@@ -153,7 +158,7 @@ class ClassificationStorage(BaseStorage):
         for doc, label in zip(docs, labels):
             for name in label:
                 label = saved_labels[name]
-                annotations.append({'document': doc.id, 'label': label.id})
+                annotations.append({"document": doc.id, "label": label.id})
         return annotations
 
 
@@ -164,6 +169,7 @@ class SequenceLabelingStorage(BaseStorage):
     {"text": "Python is awesome!", "labels": [[0, 6, "Product"],]}
     ...
     """
+
     @transaction.atomic
     def save(self, user):
         saved_labels = {label.text: label for label in self.project.labels.all()}
@@ -189,10 +195,14 @@ class SequenceLabelingStorage(BaseStorage):
             for span in spans:
                 start_offset, end_offset, name = span
                 label = saved_labels[name]
-                annotations.append({'document': doc.id,
-                                    'label': label.id,
-                                    'start_offset': start_offset,
-                                    'end_offset': end_offset})
+                annotations.append(
+                    {
+                        "document": doc.id,
+                        "label": label.id,
+                        "start_offset": start_offset,
+                        "end_offset": end_offset,
+                    }
+                )
         return annotations
 
 
@@ -203,6 +213,7 @@ class Seq2seqStorage(BaseStorage):
     {"text": "Hello, World!", "labels": ["こんにちは、世界!"]}
     ...
     """
+
     @transaction.atomic
     def save(self, user):
         for data in self.data:
@@ -216,12 +227,11 @@ class Seq2seqStorage(BaseStorage):
         annotations = []
         for doc, texts in zip(docs, labels):
             for text in texts:
-                annotations.append({'document': doc.id, 'text': text})
+                annotations.append({"document": doc.id, "text": text})
         return annotations
 
 
 class FileParser(object):
-
     def parse(self, file):
         raise NotImplementedError()
 
@@ -252,6 +262,7 @@ class CoNLLParser(FileParser):
     ...
     ```
     """
+
     def parse(self, file):
         data = []
         file = EncodedIO(file)
@@ -264,9 +275,7 @@ class CoNLLParser(FileParser):
         }
 
         gen_parser = conllu.parse_incr(
-            file,
-            fields=("form", "ne"),
-            field_parsers=field_parsers
+            file, fields=("form", "ne"), field_parsers=field_parsers
         )
 
         try:
@@ -290,7 +299,7 @@ class CoNLLParser(FileParser):
                     words.append(word)
 
                 # Create and add JSONL
-                data.append({'text': ' '.join(words), 'labels': labels})
+                data.append({"text": " ".join(words), "labels": labels})
 
         except conllu.parser.ParseException as e:
             raise FileParseException(line_num=-1, line=str(e))
@@ -309,6 +318,7 @@ class PlainTextParser(FileParser):
     ...
     ```
     """
+
     def parse(self, file):
         file = EncodedIO(file)
         file = io.TextIOWrapper(file, encoding=file.encoding)
@@ -316,7 +326,7 @@ class PlainTextParser(FileParser):
             batch = list(itertools.islice(file, get_upload_batch_size()))
             if not batch:
                 break
-            yield [{'text': line.strip()} for line in batch]
+            yield [{"text": line.strip()} for line in batch]
 
 
 class CSVParser(FileParser):
@@ -333,6 +343,7 @@ class CSVParser(FileParser):
     ...
     ```
     """
+
     def parse(self, file):
         file = EncodedIO(file)
         file = io.TextIOWrapper(file, encoding=file.encoding)
@@ -352,21 +363,21 @@ class ExcelParser(FileParser):
     def parse_excel_csv_reader(reader):
         columns = next(reader)
         data = []
-        if len(columns) == 1 and columns[0] != 'text':
-            data.append({'text': columns[0]})
+        if len(columns) == 1 and columns[0] != "text":
+            data.append({"text": columns[0]})
         for i, row in enumerate(reader, start=2):
             if len(data) >= get_upload_batch_size():
                 yield data
                 data = []
             # Only text column
             if len(row) == len(columns) and len(row) == 1:
-                data.append({'text': row[0]})
+                data.append({"text": row[0]})
             # Text, labels and metadata columns
             elif len(row) == len(columns) and len(row) >= 2:
                 datum = dict(zip(columns, row))
-                text, label = datum.pop('text'), datum.pop('label')
+                text, label = datum.pop("text"), datum.pop("label")
                 meta = FileParser.encode_metadata(datum)
-                j = {'text': text, 'labels': [label], 'meta': meta}
+                j = {"text": text, "labels": [label], "meta": meta}
                 data.append(j)
             else:
                 raise FileParseException(line_num=i, line=row)
@@ -375,7 +386,6 @@ class ExcelParser(FileParser):
 
 
 class JSONParser(FileParser):
-
     def parse(self, file):
         file = EncodedIO(file)
         file = io.TextIOWrapper(file, encoding=file.encoding)
@@ -386,7 +396,7 @@ class JSONParser(FileParser):
                 data = []
             try:
                 j = json.loads(line)
-                j['meta'] = FileParser.encode_metadata(j.get('meta', {}))
+                j["meta"] = FileParser.encode_metadata(j.get("meta", {}))
                 data.append(j)
             except json.decoder.JSONDecodeError:
                 raise FileParseException(line_num=i, line=line)
@@ -395,7 +405,6 @@ class JSONParser(FileParser):
 
 
 class JSONLRenderer(JSONRenderer):
-
     def render(self, data, accepted_media_type=None, renderer_context=None):
         """
         Render `data` into JSON, returning a bytestring.
@@ -407,23 +416,24 @@ class JSONLRenderer(JSONRenderer):
             data = [data]
 
         for d in data:
-            yield json.dumps(d,
-                             cls=self.encoder_class,
-                             ensure_ascii=self.ensure_ascii,
-                             allow_nan=not self.strict) + '\n'
+            yield json.dumps(
+                d,
+                cls=self.encoder_class,
+                ensure_ascii=self.ensure_ascii,
+                allow_nan=not self.strict,
+            ) + "\n"
 
 
 class JSONPainter(object):
-
     def paint(self, documents):
         serializer = DocumentSerializer(documents, many=True)
         data = []
         for d in serializer.data:
-            d['meta'] = json.loads(d['meta'])
-            for a in d['annotations']:
-                a.pop('id')
-                a.pop('prob')
-                a.pop('document')
+            d["meta"] = json.loads(d["meta"])
+            for a in d["annotations"]:
+                a.pop("id")
+                a.pop("prob")
+                a.pop("document")
             data.append(d)
         return data
 
@@ -434,26 +444,27 @@ class JSONPainter(object):
         data = []
         for d in serializer.data:
             labels = []
-            for a in d['annotations']:
-                label_obj = [x for x in serializer_labels.data if x['id'] == a['label']][0]
-                label_text = label_obj['text']
-                label_start = a['start_offset']
-                label_end = a['end_offset']
+            for a in d["annotations"]:
+                label_obj = [
+                    x for x in serializer_labels.data if x["id"] == a["label"]
+                ][0]
+                label_text = label_obj["text"]
+                label_start = a["start_offset"]
+                label_end = a["end_offset"]
                 labels.append([label_start, label_end, label_text])
-            d.pop('annotations')
-            d['labels'] = labels
-            d['meta'] = json.loads(d['meta'])
+            d.pop("annotations")
+            d["labels"] = labels
+            d["meta"] = json.loads(d["meta"])
             data.append(d)
         return data
 
 
 class CSVPainter(JSONPainter):
-
     def paint(self, documents):
         data = super().paint(documents)
         res = []
         for d in data:
-            annotations = d.pop('annotations')
+            annotations = d.pop("annotations")
             for a in annotations:
                 res.append({**d, **a})
         return res
@@ -461,6 +472,7 @@ class CSVPainter(JSONPainter):
 
 def iterable_to_io(iterable, buffer_size=io.DEFAULT_BUFFER_SIZE):
     """See https://stackoverflow.com/a/20260030/3817588."""
+
     class IterStream(io.RawIOBase):
         def __init__(self):
             self.leftover = None
@@ -473,17 +485,19 @@ def iterable_to_io(iterable, buffer_size=io.DEFAULT_BUFFER_SIZE):
                 l = len(b)  # We're supposed to return at most this much
                 chunk = self.leftover or next(iterable)
                 output, self.leftover = chunk[:l], chunk[l:]
-                b[:len(output)] = output
+                b[: len(output)] = output
                 return len(output)
             except StopIteration:
-                return 0    # indicate EOF
+                return 0  # indicate EOF
 
     return io.BufferedReader(IterStream(), buffer_size=buffer_size)
 
 
 class EncodedIO(io.RawIOBase):
-    def __init__(self, fobj, buffer_size=io.DEFAULT_BUFFER_SIZE, default_encoding='utf-8'):
-        buffer = b''
+    def __init__(
+        self, fobj, buffer_size=io.DEFAULT_BUFFER_SIZE, default_encoding="utf-8"
+    ):
+        buffer = b""
         detector = UniversalDetector()
 
         while True:
@@ -494,7 +508,7 @@ class EncodedIO(io.RawIOBase):
                 break
 
         if detector.done:
-            self.encoding = detector.result['encoding']
+            self.encoding = detector.result["encoding"]
         else:
             self.encoding = default_encoding
 
@@ -508,5 +522,5 @@ class EncodedIO(io.RawIOBase):
         l = len(b)
         chunk = self._buffer or self._fobj.read(l)
         output, self._buffer = chunk[:l], chunk[l:]
-        b[:len(output)] = output
+        b[: len(output)] = output
         return len(output)

@@ -10,165 +10,411 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('contenttypes', '0002_remove_content_type_name'),
+        ("contenttypes", "0002_remove_content_type_name"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Project',
+            name="Project",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('description', models.TextField(default='')),
-                ('guideline', models.TextField(default='')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('project_type', models.CharField(choices=[('DocumentClassification', 'document classification'), ('SequenceLabeling', 'sequence labeling'), ('Seq2seq', 'sequence to sequence')], max_length=30)),
-                ('randomize_document_order', models.BooleanField(default=False)),
-                ('collaborative_annotation', models.BooleanField(default=False)),
-                ('polymorphic_ctype', models.ForeignKey(editable=False, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='polymorphic_doccano.project_set+', to='contenttypes.ContentType')),
-                ('users', models.ManyToManyField(related_name='projects', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100)),
+                ("description", models.TextField(default="")),
+                ("guideline", models.TextField(default="")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "project_type",
+                    models.CharField(
+                        choices=[
+                            ("DocumentClassification", "document classification"),
+                            ("SequenceLabeling", "sequence labeling"),
+                            ("Seq2seq", "sequence to sequence"),
+                        ],
+                        max_length=30,
+                    ),
+                ),
+                ("randomize_document_order", models.BooleanField(default=False)),
+                ("collaborative_annotation", models.BooleanField(default=False)),
+                (
+                    "polymorphic_ctype",
+                    models.ForeignKey(
+                        editable=False,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="polymorphic_doccano.project_set+",
+                        to="contenttypes.ContentType",
+                    ),
+                ),
+                (
+                    "users",
+                    models.ManyToManyField(
+                        related_name="projects", to=settings.AUTH_USER_MODEL
+                    ),
+                ),
+            ],
+            options={"abstract": False, "base_manager_name": "objects",},
+        ),
+        migrations.CreateModel(
+            name="Role",
+            fields=[
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100, unique=True)),
+                ("description", models.TextField(default="")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+            ],
+        ),
+        migrations.CreateModel(
+            name="Seq2seqProject",
+            fields=[
+                (
+                    "project_ptr",
+                    models.OneToOneField(
+                        auto_created=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        parent_link=True,
+                        primary_key=True,
+                        serialize=False,
+                        to="doccano.Project",
+                    ),
+                ),
+            ],
+            options={"abstract": False, "base_manager_name": "objects",},
+            bases=("doccano.project",),
+        ),
+        migrations.CreateModel(
+            name="SequenceLabelingProject",
+            fields=[
+                (
+                    "project_ptr",
+                    models.OneToOneField(
+                        auto_created=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        parent_link=True,
+                        primary_key=True,
+                        serialize=False,
+                        to="doccano.Project",
+                    ),
+                ),
+            ],
+            options={"abstract": False, "base_manager_name": "objects",},
+            bases=("doccano.project",),
+        ),
+        migrations.CreateModel(
+            name="TextClassificationProject",
+            fields=[
+                (
+                    "project_ptr",
+                    models.OneToOneField(
+                        auto_created=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        parent_link=True,
+                        primary_key=True,
+                        serialize=False,
+                        to="doccano.Project",
+                    ),
+                ),
+            ],
+            options={"abstract": False, "base_manager_name": "objects",},
+            bases=("doccano.project",),
+        ),
+        migrations.CreateModel(
+            name="Label",
+            fields=[
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("text", models.CharField(max_length=100)),
+                (
+                    "prefix_key",
+                    models.CharField(
+                        blank=True,
+                        choices=[
+                            ("ctrl", "ctrl"),
+                            ("shift", "shift"),
+                            ("ctrl shift", "ctrl shift"),
+                        ],
+                        max_length=10,
+                        null=True,
+                    ),
+                ),
+                (
+                    "suffix_key",
+                    models.CharField(
+                        blank=True,
+                        choices=[
+                            ("0", "0"),
+                            ("1", "1"),
+                            ("2", "2"),
+                            ("3", "3"),
+                            ("4", "4"),
+                            ("5", "5"),
+                            ("6", "6"),
+                            ("7", "7"),
+                            ("8", "8"),
+                            ("9", "9"),
+                            ("a", "a"),
+                            ("b", "b"),
+                            ("c", "c"),
+                            ("d", "d"),
+                            ("e", "e"),
+                            ("f", "f"),
+                            ("g", "g"),
+                            ("h", "h"),
+                            ("i", "i"),
+                            ("j", "j"),
+                            ("k", "k"),
+                            ("l", "l"),
+                            ("m", "m"),
+                            ("n", "n"),
+                            ("o", "o"),
+                            ("p", "p"),
+                            ("q", "q"),
+                            ("r", "r"),
+                            ("s", "s"),
+                            ("t", "t"),
+                            ("u", "u"),
+                            ("v", "v"),
+                            ("w", "w"),
+                            ("x", "x"),
+                            ("y", "y"),
+                            ("z", "z"),
+                        ],
+                        max_length=1,
+                        null=True,
+                    ),
+                ),
+                ("background_color", models.CharField(default="#209cee", max_length=7)),
+                ("text_color", models.CharField(default="#ffffff", max_length=7)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "project",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="labels",
+                        to="doccano.Project",
+                    ),
+                ),
+            ],
+            options={"unique_together": {("project", "text")},},
+        ),
+        migrations.CreateModel(
+            name="Document",
+            fields=[
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("text", models.TextField()),
+                ("meta", models.TextField(default="{}")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "annotations_approved_by",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "project",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="documents",
+                        to="doccano.Project",
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="SequenceAnnotation",
+            fields=[
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("prob", models.FloatField(default=0.0)),
+                ("manual", models.BooleanField(default=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("start_offset", models.IntegerField()),
+                ("end_offset", models.IntegerField()),
+                (
+                    "document",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="seq_annotations",
+                        to="doccano.Document",
+                    ),
+                ),
+                (
+                    "label",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="doccano.Label"
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
-                'base_manager_name': 'objects',
+                "unique_together": {
+                    ("document", "user", "label", "start_offset", "end_offset")
+                },
             },
         ),
         migrations.CreateModel(
-            name='Role',
+            name="Seq2seqAnnotation",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100, unique=True)),
-                ('description', models.TextField(default='')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("prob", models.FloatField(default=0.0)),
+                ("manual", models.BooleanField(default=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("text", models.CharField(max_length=500)),
+                (
+                    "document",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="seq2seq_annotations",
+                        to="doccano.Document",
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
+            options={"unique_together": {("document", "user", "text")},},
         ),
         migrations.CreateModel(
-            name='Seq2seqProject',
+            name="RoleMapping",
             fields=[
-                ('project_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='doccano.Project')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "project",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="role_mappings",
+                        to="doccano.Project",
+                    ),
+                ),
+                (
+                    "role",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="doccano.Role"
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="role_mappings",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
-            options={
-                'abstract': False,
-                'base_manager_name': 'objects',
-            },
-            bases=('doccano.project',),
+            options={"unique_together": {("user", "project", "role")},},
         ),
         migrations.CreateModel(
-            name='SequenceLabelingProject',
+            name="DocumentAnnotation",
             fields=[
-                ('project_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='doccano.Project')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("prob", models.FloatField(default=0.0)),
+                ("manual", models.BooleanField(default=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "document",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="doc_annotations",
+                        to="doccano.Document",
+                    ),
+                ),
+                (
+                    "label",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="doccano.Label"
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
-            options={
-                'abstract': False,
-                'base_manager_name': 'objects',
-            },
-            bases=('doccano.project',),
-        ),
-        migrations.CreateModel(
-            name='TextClassificationProject',
-            fields=[
-                ('project_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='doccano.Project')),
-            ],
-            options={
-                'abstract': False,
-                'base_manager_name': 'objects',
-            },
-            bases=('doccano.project',),
-        ),
-        migrations.CreateModel(
-            name='Label',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('text', models.CharField(max_length=100)),
-                ('prefix_key', models.CharField(blank=True, choices=[('ctrl', 'ctrl'), ('shift', 'shift'), ('ctrl shift', 'ctrl shift')], max_length=10, null=True)),
-                ('suffix_key', models.CharField(blank=True, choices=[('0', '0'), ('1', '1'), ('2', '2'), ('3', '3'), ('4', '4'), ('5', '5'), ('6', '6'), ('7', '7'), ('8', '8'), ('9', '9'), ('a', 'a'), ('b', 'b'), ('c', 'c'), ('d', 'd'), ('e', 'e'), ('f', 'f'), ('g', 'g'), ('h', 'h'), ('i', 'i'), ('j', 'j'), ('k', 'k'), ('l', 'l'), ('m', 'm'), ('n', 'n'), ('o', 'o'), ('p', 'p'), ('q', 'q'), ('r', 'r'), ('s', 's'), ('t', 't'), ('u', 'u'), ('v', 'v'), ('w', 'w'), ('x', 'x'), ('y', 'y'), ('z', 'z')], max_length=1, null=True)),
-                ('background_color', models.CharField(default='#209cee', max_length=7)),
-                ('text_color', models.CharField(default='#ffffff', max_length=7)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('project', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='labels', to='doccano.Project')),
-            ],
-            options={
-                'unique_together': {('project', 'text')},
-            },
-        ),
-        migrations.CreateModel(
-            name='Document',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('text', models.TextField()),
-                ('meta', models.TextField(default='{}')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('annotations_approved_by', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
-                ('project', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='documents', to='doccano.Project')),
-            ],
-        ),
-        migrations.CreateModel(
-            name='SequenceAnnotation',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('prob', models.FloatField(default=0.0)),
-                ('manual', models.BooleanField(default=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('start_offset', models.IntegerField()),
-                ('end_offset', models.IntegerField()),
-                ('document', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='seq_annotations', to='doccano.Document')),
-                ('label', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='doccano.Label')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-            ],
-            options={
-                'unique_together': {('document', 'user', 'label', 'start_offset', 'end_offset')},
-            },
-        ),
-        migrations.CreateModel(
-            name='Seq2seqAnnotation',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('prob', models.FloatField(default=0.0)),
-                ('manual', models.BooleanField(default=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('text', models.CharField(max_length=500)),
-                ('document', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='seq2seq_annotations', to='doccano.Document')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-            ],
-            options={
-                'unique_together': {('document', 'user', 'text')},
-            },
-        ),
-        migrations.CreateModel(
-            name='RoleMapping',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('project', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='role_mappings', to='doccano.Project')),
-                ('role', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='doccano.Role')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='role_mappings', to=settings.AUTH_USER_MODEL)),
-            ],
-            options={
-                'unique_together': {('user', 'project', 'role')},
-            },
-        ),
-        migrations.CreateModel(
-            name='DocumentAnnotation',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('prob', models.FloatField(default=0.0)),
-                ('manual', models.BooleanField(default=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('document', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='doc_annotations', to='doccano.Document')),
-                ('label', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='doccano.Label')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-            ],
-            options={
-                'unique_together': {('document', 'user', 'label')},
-            },
+            options={"unique_together": {("document", "user", "label")},},
         ),
     ]

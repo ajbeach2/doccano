@@ -15,120 +15,111 @@ logger = logging.getLogger(__name__)
 
 
 class IndexView(TemplateView):
-    template_name = 'index.html'
+    template_name = "index.html"
 
 
 class ProjectView(LoginRequiredMixin, TemplateView):
-    template_name = 'annotation.html'
+    template_name = "annotation.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        project = get_object_or_404(Project, pk=self.kwargs['project_id'])
-        context['is_project_admin'] = RoleMapping.objects.filter(
+        project = get_object_or_404(Project, pk=self.kwargs["project_id"])
+        context["is_project_admin"] = RoleMapping.objects.filter(
             role_id__name=settings.ROLE_PROJECT_ADMIN,
             project=project.id,
-            user=self.request.user.id
+            user=self.request.user.id,
         ).exists()
-        context['bundle_name'] = 'bundle/' + project.get_bundle_name()
+        context["bundle_name"] = "bundle/" + project.get_bundle_name()
         return context
 
 
 class ProjectsView(LoginRequiredMixin, TemplateView):
-    template_name = 'projects.html'
+    template_name = "projects.html"
 
 
 class DatasetView(ProjectAdminMixin, LoginRequiredMixin, ListView):
-    template_name = 'dataset.html'
+    template_name = "dataset.html"
     paginate_by = 5
-    extra_context = {
-        'bundle_name': 'bundle/dataset.js'
-    }
+    extra_context = {"bundle_name": "bundle/dataset.js"}
 
     def get_queryset(self):
-        project = get_object_or_404(Project, pk=self.kwargs['project_id'])
+        project = get_object_or_404(Project, pk=self.kwargs["project_id"])
         return project.documents.all()
 
 
 class LabelView(ProjectAdminMixin, LoginRequiredMixin, TemplateView):
-    template_name = 'admin.html'
-    extra_context = {
-        'bundle_name': 'bundle/label.js'
-    }
+    template_name = "admin.html"
+    extra_context = {"bundle_name": "bundle/label.js"}
 
 
 class StatsView(ProjectAdminMixin, LoginRequiredMixin, TemplateView):
-    template_name = 'admin.html'
-    extra_context = {
-        'bundle_name': 'bundle/stats.js'
-    }
+    template_name = "admin.html"
+    extra_context = {"bundle_name": "bundle/stats.js"}
 
 
 class GuidelineView(ProjectAdminMixin, LoginRequiredMixin, TemplateView):
-    template_name = 'admin.html'
-    extra_context = {
-        'bundle_name': 'bundle/guideline.js'
-    }
+    template_name = "admin.html"
+    extra_context = {"bundle_name": "bundle/guideline.js"}
 
 
 class UsersView(ProjectAdminMixin, LoginRequiredMixin, TemplateView):
-    template_name = 'admin.html'
-    extra_context = {
-        'bundle_name': 'bundle/users.js'
-    }
+    template_name = "admin.html"
+    extra_context = {"bundle_name": "bundle/users.js"}
 
 
 class DataUpload(ProjectAdminMixin, LoginRequiredMixin, TemplateView):
-    template_name = 'admin.html'
+    template_name = "admin.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        project = get_object_or_404(Project, pk=self.kwargs['project_id'])
-        context['bundle_name'] = "bundle/" + project.get_bundle_name_upload()
+        project = get_object_or_404(Project, pk=self.kwargs["project_id"])
+        context["bundle_name"] = "bundle/" + project.get_bundle_name_upload()
         return context
 
 
 class DataDownload(ProjectAdminMixin, LoginRequiredMixin, TemplateView):
-    template_name = 'admin.html'
+    template_name = "admin.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        project = get_object_or_404(Project, pk=self.kwargs['project_id'])
-        context['bundle_name'] = "bundle/" + project.get_bundle_name_download()
+        project = get_object_or_404(Project, pk=self.kwargs["project_id"])
+        context["bundle_name"] = "bundle/" + project.get_bundle_name_download()
         return context
 
 
 class LoginView(BaseLoginView):
-    template_name = 'login.html'
+    template_name = "login.html"
     redirect_authenticated_user = True
     extra_context = {
         #'github_login': bool(settings.SOCIAL_AUTH_GITHUB_KEY),
         #'aad_login': bool(settings.SOCIAL_AUTH_AZUREAD_TENANT_OAUTH2_TENANT_ID),
-        'allow_signup': False,
+        "allow_signup": False,
     }
 
     def get_context_data(self, **kwargs):
         context = super(LoginView, self).get_context_data(**kwargs)
-        context['social_login_enabled'] = any(value for key, value in context.items()
-                                              if key.endswith('_login'))
+        context["social_login_enabled"] = any(
+            value for key, value in context.items() if key.endswith("_login")
+        )
         return context
 
 
 class DemoTextClassification(TemplateView):
-    template_name = 'annotation.html'
+    template_name = "annotation.html"
     extra_context = {
-        'bundle_name': 'bundle/demo_text_classification.js',
+        "bundle_name": "bundle/demo_text_classification.js",
     }
 
 
 class DemoNamedEntityRecognition(TemplateView):
-    template_name = 'annotation.html'
+    template_name = "annotation.html"
     extra_context = {
-        'bundle_name': 'bundle/demo_named_entity.js',
+        "bundle_name": "bundle/demo_named_entity.js",
     }
 
 
 class DemoTranslation(TemplateView):
-    template_name = 'annotation.html'
+    template_name = "annotation.html"
     extra_context = {
-        'bundle_name': 'bundle/demo_translation.js',
+        "bundle_name": "bundle/demo_translation.js",
     }
