@@ -65,10 +65,16 @@ export default {
     },
 
     async submit() {
-      const state = this.getState();
-      const approved = this.picked != 'approved'
-    
-      this.url = `docs?q=${this.searchQuery}&seq_annotations__isnull=${state}&offset=${this.offset}&ordering=${this.ordering}&annotations_approved_by_id_isnull=${approved}`;
+      if (this.picked == "active") {
+        this.url = `docs?q=${this.searchQuery}&seq_annotations__isnull=${true}&offset=${this.offset}&ordering=${this.ordering}`;
+      } else if (this.picked == "completed") {
+        this.url = `docs?q=${this.searchQuery}&seq_annotations__isnull=${false}&offset=${this.offset}&ordering=${this.ordering}&annotations_approved_by_id_isnull=${true}`;
+      } else if (this.picked == "approved") {
+        this.url = `docs?q=${this.searchQuery}&offset=${this.offset}&ordering=${this.ordering}&annotations_approved_by_id_isnull=${false}`;
+      } else {
+        this.url = `docs?q=${this.searchQuery}&offset=${this.offset}&ordering=${this.ordering}`;
+      }
+
       await this.search();
       this.pageNumber = 0;
     },
