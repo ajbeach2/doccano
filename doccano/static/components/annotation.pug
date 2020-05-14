@@ -50,7 +50,15 @@ div.columns(v-cloak="")
                         type="radio"
                         value="completed"
                       )
-                      | Completed
+                      | Awiating Approval
+                  a.dropdown-item
+                    label.radio
+                      input(
+                        v-model="picked"
+                        type="radio"
+                        value="approved"
+                      )
+                      | Approved
 
       div.main.pt0.pb0.pr20.pl20
         span About {{ count }} results (page {{ paginationPage }} of {{ paginationPages }})
