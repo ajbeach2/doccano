@@ -15,7 +15,6 @@ requires = [
 'django-widget-tweaks',
 'django-rest-framework',
 'django-filter',
-'apache-libcloud',
 'djangorestframework-csv',
 'django-rest-polymorphic',
 'conllu',
