@@ -24,7 +24,7 @@ from .views.api import ProjectList, ProjectDetail
 from .views.api import LabelList, LabelDetail, ApproveLabelsAPI, LabelUploadAPI
 from .views.api import DocumentList, DocumentDetail
 from .views.api import AnnotationList, AnnotationDetail
-from .views.api import TextUploadAPI, TextDownloadAPI, CloudUploadAPI
+from .views.api import TextUploadAPI, TextDownloadAPI
 from .views.api import StatisticsAPI
 from .views.api import RoleMappingList, RoleMappingDetail, Roles
 
@@ -67,7 +67,6 @@ urlpatterns = [
     path("v1/auth-token", obtain_auth_token),
     path("v1/me", Me.as_view(), name="me"),
     path("v1/features", Features.as_view(), name="features"),
-    path("v1/cloud-upload", CloudUploadAPI.as_view(), name="cloud_uploader"),
     path("v1/projects", ProjectList.as_view(), name="project_list"),
     path("v1/users", Users.as_view(), name="user_list"),
     path("v1/roles", Roles.as_view(), name="roles"),

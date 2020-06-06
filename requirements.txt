@@ -4,24 +4,19 @@
 #
 #    pip-compile
 #
-apache-libcloud==3.0.0    # via -r requirements.in
 asgiref==3.2.7            # via django
-certifi==2020.4.5.1       # via requests
-chardet==3.0.4            # via requests
 colour==0.1.5             # via -r requirements.in
 conllu==2.3.2             # via -r requirements.in
 django-filter==2.2.0      # via -r requirements.in
 django-polymorphic==2.1.2  # via -r requirements.in, django-rest-polymorphic
 django-rest-framework==0.1.0  # via -r requirements.in
 django-rest-polymorphic==0.1.9  # via -r requirements.in
-django-webpack-loader==0.7.0  # via -r requirements.in
 django-widget-tweaks==1.4.8  # via -r requirements.in
 django==3.0.6             # via -r requirements.in, django-filter, django-polymorphic, django-rest-polymorphic, djangorestframework
 djangorestframework-csv==2.1.0  # via -r requirements.in
 djangorestframework==3.11.0  # via django-rest-framework, django-rest-polymorphic, djangorestframework-csv
 et-xmlfile==1.0.1         # via openpyxl
 h5py==2.10.0              # via keras, keras-applications
-idna==2.9                 # via requests
 jdcal==1.4.1              # via openpyxl
 keras-applications==1.0.8  # via keras
 keras-preprocessing==1.1.0  # via keras
@@ -32,14 +27,11 @@ openpyxl==3.0.3           # via pyexcel-xlsx
 pyexcel-io==0.5.20        # via pyexcel, pyexcel-xlsx
 pyexcel-xlsx==0.5.8       # via -r requirements.in
 pyexcel==0.6.1            # via -r requirements.in
-python-decouple==3.3      # via -r requirements.in
 pytz==2020.1              # via django
 pyyaml==5.3.1             # via keras
-requests==2.23.0          # via apache-libcloud
 scipy==1.4.1              # via keras
 seqeval==0.0.12           # via -r requirements.in
 six==1.14.0               # via django-rest-polymorphic, djangorestframework-csv, h5py, keras, keras-preprocessing
 sqlparse==0.3.1           # via django
 texttable==1.6.2          # via pyexcel
 unicodecsv==0.14.1        # via djangorestframework-csv
-urllib3==1.25.9           # via requests
