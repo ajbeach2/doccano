@@ -244,15 +244,6 @@ export default {
       this.offset = 0;
       this.submit();
     },
-
-    annotations() {
-      // fetch progress info.
-      HTTP.get('statistics?include=total&include=remaining').then((response) => {
-        this.total = response.data.total;
-        this.remaining = response.data.remaining;
-      });
-    },
-
     offset() {
       storeOffsetInUrl(this.offset);
     },

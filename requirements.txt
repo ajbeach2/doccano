@@ -5,33 +5,55 @@
 #    pip-compile
 #
 asgiref==3.2.7            # via django
-colour==0.1.5             # via -r requirements.in
-conllu==2.3.2             # via -r requirements.in
-django-filter==2.2.0      # via -r requirements.in
-django-polymorphic==2.1.2  # via -r requirements.in, django-rest-polymorphic
-django-rest-framework==0.1.0  # via -r requirements.in
-django-rest-polymorphic==0.1.9  # via -r requirements.in
-django-widget-tweaks==1.4.8  # via -r requirements.in
-django==3.0.6             # via -r requirements.in, django-filter, django-polymorphic, django-rest-polymorphic, djangorestframework
-djangorestframework-csv==2.1.0  # via -r requirements.in
+blis==0.4.1               # via spacy, thinc
+catalogue==1.0.0          # via spacy, thinc
+certifi==2020.4.5.2       # via requests
+chardet==3.0.4            # via requests
+colour==0.1.5
+conllu==2.3.2
+cymem==2.0.3              # via preshed, spacy, thinc
+django-filter==2.2.0
+django-polymorphic==2.1.2
+django-rest-framework==0.1.0
+django-rest-polymorphic==0.1.9
+django-widget-tweaks==1.4.8
+django==3.0.6
+djangorestframework-csv==2.1.0
 djangorestframework==3.11.0  # via django-rest-framework, django-rest-polymorphic, djangorestframework-csv
+https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-2.2.0/en_core_web_sm-2.2.0.tar.gz
 et-xmlfile==1.0.1         # via openpyxl
 h5py==2.10.0              # via keras, keras-applications
+idna==2.9                 # via requests
+importlib-metadata==1.6.1  # via catalogue
 jdcal==1.4.1              # via openpyxl
 keras-applications==1.0.8  # via keras
 keras-preprocessing==1.1.0  # via keras
 keras==2.3.1              # via seqeval
 lml==0.0.9                # via pyexcel, pyexcel-io
-numpy==1.18.4             # via h5py, keras, keras-applications, keras-preprocessing, scipy, seqeval
+murmurhash==1.0.2         # via preshed, spacy, thinc
+numpy==1.18.4             # via blis, h5py, keras, keras-applications, keras-preprocessing, scipy, seqeval, spacy, thinc
 openpyxl==3.0.3           # via pyexcel-xlsx
+plac==1.1.3               # via spacy, thinc
+preshed==3.0.2            # via spacy, thinc
 pyexcel-io==0.5.20        # via pyexcel, pyexcel-xlsx
-pyexcel-xlsx==0.5.8       # via -r requirements.in
-pyexcel==0.6.1            # via -r requirements.in
+pyexcel-xlsx==0.5.8
+pyexcel==0.6.1
 pytz==2020.1              # via django
 pyyaml==5.3.1             # via keras
+requests==2.24.0          # via spacy
 scipy==1.4.1              # via keras
-seqeval==0.0.12           # via -r requirements.in
+seqeval==0.0.12
 six==1.14.0               # via django-rest-polymorphic, djangorestframework-csv, h5py, keras, keras-preprocessing
+spacy==2.3.0
 sqlparse==0.3.1           # via django
+srsly==1.0.2              # via spacy, thinc
 texttable==1.6.2          # via pyexcel
+thinc==7.4.1              # via spacy
+tqdm==4.46.1              # via spacy, thinc
 unicodecsv==0.14.1        # via djangorestframework-csv
+urllib3==1.25.9           # via requests
+wasabi==0.6.0             # via spacy, thinc
+zipp==3.1.0               # via importlib-metadata
+
+# The following packages are considered to be unsafe in a requirements file:
+# setuptools==47.3.1        # via spacy

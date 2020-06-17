@@ -30,7 +30,47 @@ block annotation-area
           v-on:remove-label="removeLabel"
           v-on:add-label="addLabel"
           ref="annotator"
-        )
+          )
+
+
+block ner-area
+  h1 Test Against NER Model
+  select.custom-select
+    option(selected='') Select NER Model
+    option(value='1') en_core_web_sm
+    option(value='2') Custom 1
+    option(value='3') Custom 2
+
+
+  div.card
+    header.card-header
+      div.card-header-title.has-background-royalblue
+        div.field.is-grouped.is-grouped-multiline
+          div.control(v-for="label in labels")
+            div.tags.has-addons
+              a.tag.is-medium(
+                v-shortkey.once="replaceNull(shortcutKey(label))"
+                v-bind:style="{ \
+                  color: label.text_color, \
+                  backgroundColor: label.background_color \
+                }"
+                v-on:click="annotate(label.id)"
+                v-on:shortkey="annotate(label.id)"
+              ) {{ label.text }}
+              span.tag.is-medium
+                kbd {{ shortcutKey(label) | simpleShortcut }}
+
+    div.card-content
+      div.content.scrollable(v-if="docs[pageNumber] && annotations[pageNumber]", ref="textbox")
+        annotator(
+          v-bind:labels="labels"
+          v-bind:entity-positions="annotations[pageNumber]"
+          v-bind:search-query="searchQuery"
+          v-bind:text="docs[pageNumber].text"
+          v-on:remove-label="removeLabel"
+          v-on:add-label="addLabel"
+          ref="annotator"
+          )
 </template>
 
 <style scoped>

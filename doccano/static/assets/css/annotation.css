@@ -13,7 +13,7 @@ body {
 }
 
 .scrollable {
-  max-height: 60vh;
+  max-height: 120vh;
   overflow-y: auto;
 }
 
